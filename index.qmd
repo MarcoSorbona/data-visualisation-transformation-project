@@ -40,7 +40,28 @@ Rational: the question is asking if there is a relationship between the distance
 
 in this case we have to find a relationship between a `continuous variable` (miles) and a `categorical variable` (tip: Yes/No).
 
-We can evaluate the presence of a relationship using graphical visualizations. the most appropriate in this case would be a bar plot having the tip on the "x" axes and the miles on the "y" axes.
+We can evaluate the presence of a relationship using graphical visualizations.
+
+Let's start with looking at counts of rides with and without tips:
+
+```{r}
+ggplot(
+  taxi,
+  aes(x = tip)) +
+  geom_bar()
+```
+
+The vast majority of rides got a tip.
+
+```{r}
+ggplot(
+  taxi,
+  aes(x = distance)
+) +
+  geom_histogram(binwidth = 0.5)
+```
+
+The histogram shows a bimodal distribution of the frequency of rides with a first main peak at approx 2.5 miles and a second peak at approx 18 miles.
 
 ## Question 2
 
