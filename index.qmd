@@ -4,24 +4,44 @@ author: "Marco Sorbona"
 subtitle: "Investigation into Chicago taxis"
 echo: false
 bibliography: references.bib
+editor_options: 
+  chunk_output_type: console
 ---
 
-## Packages 
+## Packages
 
 ```{r}
-#| warning: false
-#| message: false
+#| warning: true
+#| message: true
 library(tidyverse)
 library(tidymodels)
 library(scales)
 ```
 
+## Overview of the data set
+
+The `taxi` data set containing information on a subset of taxi trips in the city of Chicago in 2022.
+
+Below is a snapshot of the data set showing the variables
+
+```{r}
+glimpse(taxi)
+```
+
 ## Question 1
 
+First question to answer is the following: *Is there there a relationship between the distance (in miles) someone travels in a taxi and if they tip or not?*
 
-## Question 2 
+Rational: the question is asking if there is a relationship between the distance of the ride and the eventuality of getting a tip based on the distance.
 
+-   Hp1: longer rides get a tip.
 
-## Your own question 
+-   Hp2: shorter rides are cheaper so they get a tip
 
+in this case we have to find a relationship between a `continuous variable` (miles) and a `categorical variable` (tip: Yes/No).
 
+We can evaluate the presence of a relationship using graphical visualizations. the most appropriate in this case would be a bar plot having the tip on the "x" axes and the miles on the "y" axes.
+
+## Question 2
+
+## Your own question
