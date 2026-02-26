@@ -11,11 +11,12 @@ editor_options:
 ## Packages
 
 ```{r}
-#| warning: true
-#| message: true
+#| warning: false
+#| message: false
 library(tidyverse)
 library(tidymodels)
 library(scales)
+library(ggthemes)
 ```
 
 ## Overview of the data set
@@ -53,15 +54,28 @@ ggplot(
 
 The vast majority of rides got a tip.
 
+**Histogram**
+
 ```{r}
 ggplot(
   taxi,
-  aes(x = distance)
+  aes(x = distance, color = tip)
 ) +
   geom_histogram(binwidth = 0.5)
 ```
 
 The histogram shows a bimodal distribution of the frequency of rides with a first main peak at approx 2.5 miles and a second peak at approx 18 miles.
+
+**Boxplot**
+
+Let's visualise the data using a boxplot:
+
+```{r}
+ggplot(
+  taxi,
+  aes(x = tip, y = distance)) +
+  geom_boxplot()
+```
 
 ## Question 2
 
