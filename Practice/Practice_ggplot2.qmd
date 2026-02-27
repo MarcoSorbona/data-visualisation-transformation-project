@@ -274,8 +274,18 @@ ggplot(
 ### 1.4.3 Exercises
 
 1.  Make a bar plot of `species` of `penguins`, where you assign `species` to the `y` aesthetic. How is this plot different?
+    -   In this case, it's a bar plot of categorical data with speceis on Y axes and on x axes we have the counts for each species
 
 ```{r}
-ggplot(penguins, aes(y = species)) +
+ggplot(penguins, aes(y = species))+
+  geom_bar()
+```
+
+We can order the bars from largest to smallest (from bottom to top!) using: `fct_infreq`
+
+To get from Top to Bottom add: `fct_rev`
+
+```{r}
+ggplot(penguins, aes(y = fct_rev(fct_infreq(species)))) +
   geom_bar()
 ```
