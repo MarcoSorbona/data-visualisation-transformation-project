@@ -312,11 +312,61 @@ ggplot(
 3.  What does the `bins` argument in [`geom_histogram()`](https://ggplot2.tidyverse.org/reference/geom_histogram.html) do?
     -   impose the number of bins and overrides the `binwidth`
 4.  Make a histogram of the `carat` variable in the `diamonds` dataset that is available when you load the tidyverse package. Experiment with different binwidths. What binwidth reveals the most interesting patterns?
+    -   the best `binwidth` is 0.01. it shows interesting patterns: it's a multimodal distribution
 
 ```{r}
 ggplot(
   diamonds,
   aes(x = carat)
 ) +
-  geom_histogram(binwidth = 1)
+  geom_histogram(binwidth = 0.01)
 ```
+
+## 1.5 Visualizing relationships
+
+Visualisation of two or more variables and related geoms
+
+### 1.5.1. a *numerical* and *categorical* variable: **boxplot**
+
+```{r}
+ggplot(penguins, aes(x = species, y = body_mass_g)) +
+  geom_boxplot()
+```
+
+we can also make **density** plots:
+
+```{r}
+ggplot(penguins, aes(x = body_mass_g, color = species)) +
+  geom_density(linewidth = 0.75)
+```
+
+```{r}
+ggplot(penguins, aes(x = body_mass_g, color = species, fill = species)) +
+  geom_density(alpha = 0.5, linewidth = 0.75)
+```
+
+### 1.5.2. Two categorical variables
+
+we can use **stacked bar plots** for relationships between two categorical variables. For example: species and islands (which species in each island)
+
+```{r}
+ggplot(penguins, aes(x = island, fill = species)) +
+  geom_bar()
+```
+
+to show percentage:
+
+```{r}
+ggplot(penguins, aes(x = island, fill = species)) +
+  geom_bar(position = "fill")
+```
+
+Change labels with `labs()`
+
+```{r}
+ggplot(penguins, aes(x = island, fill = species)) +
+  geom_bar(position = "fill") +
+  labs(y = "Proportion", x = "Island")
+```
+
+### 1.5.3. two numerical variables
