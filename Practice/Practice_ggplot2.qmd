@@ -370,3 +370,39 @@ ggplot(penguins, aes(x = island, fill = species)) +
 ```
 
 ### 1.5.3. two numerical variables
+
+scatterplots are the most common visualisation:
+
+```{r}
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point()
+```
+
+### 1.5.4. three or more variables
+
+more variables by **mapping** them to additional *aesthetics*. color for species and shape for islands:
+
+```{r}
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(aes(color = species, shape = island))
+```
+
+but it can become quite cluttered. so we can add **facets** for 4 or more variables: *subplots*
+
+the following case show the plots **as a function of** islands:
+
+```{r}
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(aes(color = species, shape = species)) +
+  facet_wrap(~island)
+```
+
+While the following as a function of species:
+
+```{r}
+ggplot(penguins, aes(x = flipper_length_mm, y = body_mass_g)) +
+  geom_point(aes(color = island, shape = island)) +
+  facet_wrap(~species)
+```
+
+### 1.5.5. Excercises
