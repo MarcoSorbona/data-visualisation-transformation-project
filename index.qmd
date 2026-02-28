@@ -69,7 +69,7 @@ taxi |>
 
 **Observation:** Most trips in this dataset received a tip.
 
----
+------------------------------------------------------------------------
 
 #### Summary Statistics
 
@@ -85,7 +85,7 @@ taxi |>
   )
 ```
 
----
+------------------------------------------------------------------------
 
 ### Distribution of Trip Distances by Tip Status
 
@@ -133,7 +133,7 @@ The peak at 0 miles suggests data quality issues (perhaps trips with missing dis
 
 4.  **Airport waiting**: Taxis waiting in queue with zero movement
 
----
+------------------------------------------------------------------------
 
 #### Boxplot
 
@@ -154,7 +154,7 @@ ggplot(taxi, aes(x = tip, y = distance, fill = tip)) +
 
 The boxplot confirms the presence of numerous outliers at longer distances, making it less ideal for visualizing the overall pattern.
 
----
+------------------------------------------------------------------------
 
 #### Density Plot (Best Visualisation)
 
