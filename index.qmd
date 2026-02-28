@@ -204,6 +204,52 @@ This pattern supports **Hypothesis 1**: longer trips are more likely to receive 
 
 The density plot is the most effective visualization for this question as it clearly shows probability differences across the distance spectrum
 
-## Question 2
+## Question 2: Do taxi passengers tend to tip more for the company Chicago Independents than the other companies?
+
+#### Calculate tip rate:
+
+```{r}
+#| label: q2-company-tip-rate
+#| fig-cap: "Tip ra(te by company"
+
+company_tip_rates <- taxi |>
+  group_by(company) |>
+  summarise(
+    total_trips = n(),
+    tipped_trips = sum(tip == "yes", na.rm = TRUE),
+    tip_rate = tipped_trips / total_trips
+  ) |>
+arrange(desc(tip_rate))
+company_tip_rates
+```
+
+#### Highlight Chicago Independents
+
+```{r}
+company_tip_rates <- company_tip_rates |>
+  mutate(
+    highlight = if_else(company == "Chicago Independents", "CI", "Other")
+  )
+company_tip_rates
+```
+
+#### Plot
+
+```{r}
+ggplot(company_tip_rates, aes(x = reorder(company, tip_rate), y = tip_rate, fill = highlight)) +
+  geom_col() +
+  coord_flip() +
+  scale_y_continuous(labels = percent) +
+  scale_fill_manual(values = c("CI" = "red", "Other" = "gray")) +
+  labs(
+    title = "Do passengers tip more for Chicago Independents?",
+    subtitle = "Tip rate = % of trips with a tip",
+    x = "Company",
+    y = "Tip rate",
+    caption = "Chicago Independents highlighted in red"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
 
 ## Your own question
