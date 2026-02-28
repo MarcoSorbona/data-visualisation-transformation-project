@@ -8,74 +8,201 @@ editor_options:
   chunk_output_type: console
 ---
 
-## Packages
-
 ```{r}
 #| warning: false
-#| message: false
+#| message: true
 library(tidyverse)
 library(tidymodels)
 library(scales)
 library(ggthemes)
 ```
 
-## Overview of the data set
+## Data Overview
 
-The `taxi` data set containing information on a subset of taxi trips in the city of Chicago in 2022.
+The `taxi` dataset contains information on a subset of taxi trips in Chicago during 2022.
 
-Below is a snapshot of the data set showing the variables
+Below is a snapshot of the dataset:
 
 ```{r}
+#| label: glimpse
 glimpse(taxi)
 ```
 
-## Question 1
+## Question 1: Is there a relationship between trip distance and tipping?
 
-First question to answer is the following: *Is there there a relationship between the distance (in miles) someone travels in a taxi and if they tip or not?*
+**Research question:** Do passengers tip differently based on how far they travel?
 
-Rational: the question is asking if there is a relationship between the distance of the ride and the eventuality of getting a tip based on the distance.
+Hypotheses:
 
--   Hp1: longer rides get a tip.
+-   **Hp1**: Longer trips are more likely to receive a tip
 
--   Hp2: shorter rides are cheaper so they get a tip
+-   **Hp2**: Shorter trips are cheaper, so passengers might tip more frequently
 
-in this case we have to find a relationship between a `continuous variable` (miles) and a `categorical variable` (tip: Yes/No).
+This question involves exploring the relationship between a **continuous variable** (distance in miles) and a **categorical variable** (tip: yes/no).
 
-We can evaluate the presence of a relationship using graphical visualizations.
+------------------------------------------------------------------------
 
-Let's start with looking at counts of rides with and without tips:
+### Initial Exploration: Tip Frequency
 
-```{r}
-ggplot(
-  taxi,
-  aes(x = tip)) +
-  geom_bar()
-```
+First, let's look at the overall proportion of trips that received tips:
 
-The vast majority of rides got a tip.
-
-**Histogram**
+#### Proportion with Bar plot
 
 ```{r}
-ggplot(
-  taxi,
-  aes(x = distance, color = tip)
-) +
-  geom_histogram(binwidth = 0.5)
+#| label: q1-proportion-bar-plot
+#| fig-cap: "Proportion of trips with and without tips"
+taxi |>
+  count(tip) |>
+  mutate(perc = n / sum(n)) |>
+  ggplot(aes(x = tip, y = perc, fill = tip)) +
+  geom_col() +
+  scale_y_continuous(labels = percent) +
+  labs(
+    title = "Tip proportion in Chicago taxi trips",
+    subtitle = "The vast majority of trips receive tips",
+    x = "Tip received",
+    y = "Proportion of trips",
+    fill = "Tip"
+  ) +
+  theme_minimal()
 ```
 
-The histogram shows a bimodal distribution of the frequency of rides with a first main peak at approx 2.5 miles and a second peak at approx 18 miles.
+**Observation:** Most trips in this dataset received a tip.
 
-**Boxplot**
+---
 
-Let's visualise the data using a boxplot:
+#### Summary Statistics
 
 ```{r}
-ggplot(
-  taxi,
-  aes(x = tip, y = distance)) +
-  geom_boxplot()
+#| label: summary-stat
+taxi |>
+  group_by(tip) |>
+  summarise(
+    mean_dist = mean(distance, na.rm = TRUE),
+    median_dist = median(distance, na.rm = TRUE),
+    sd_dist = sd(distance, na.rm = TRUE),
+    n = n()
+  )
 ```
+
+---
+
+### Distribution of Trip Distances by Tip Status
+
+#### Histogram
+
+```{r}
+#| label: q1-histogram
+#| fig-cap: "Distribution of trips with and without tips"
+#| warning: false
+ggplot(taxi, aes(x = distance, fill = tip)) +
+  geom_histogram(binwidth = 0.15, alpha = 0.7, position = "identity") +
+  scale_x_continuous(limits = c(-0.5, 25), breaks = seq(0,50,5)) +
+  scale_y_continuous(breaks = seq(0, 800, 200)) +
+  labs(
+    title = "Distribution of trip distance by tip status",
+    subtitle = "Multimodal distribution with peaks at ~2, ~12, and ~18 miles",
+    x = "Distance (miles)",
+    y = "Number of trips",
+    fill = "Tip"
+  ) +
+  theme_minimal()
+```
+
+The histogram reveals a **multimodal distribution** with **four distinct peaks**:
+
+-   **Peak 1: \~0 miles**. Very short/zero-distance trips
+
+-   **Peak 2: \~2.5 miles**. Most common trip length
+
+-   **Peak 3: \~12 miles**. Medium-length trips
+
+-   **Peak 4: \~18 miles**. Long trips
+
+#### What Could the 0-Mile Peak Represent?
+
+The peak at 0 miles suggests data quality issues (perhaps trips with missing distance), which should be investigated or filtered.
+
+**Possible explanations:**
+
+1.  **Data errors**: Trips recorded with zero distance (technical issues?)
+
+2.  **Cancelled trips**: Passenger cancelled but driver still recorded?
+
+3.  **Very short hops**: Around the block, between nearby buildings
+
+4.  **Airport waiting**: Taxis waiting in queue with zero movement
+
+---
+
+#### Boxplot
+
+```{r}
+#| label: q1-boxplot
+#| fig-cap: "Trip distance distribution by tipping status"
+ggplot(taxi, aes(x = tip, y = distance, fill = tip)) +
+  geom_boxplot() +
+  labs(
+    title = "Trip distance distribution by tip status",
+    subtitle = "Boxplot shows many outliers at longer distances",
+    x = "Tip received",
+    y = "Distance (miles)",
+    fill = "Tip"
+  ) +
+  theme_minimal()
+```
+
+The boxplot confirms the presence of numerous outliers at longer distances, making it less ideal for visualizing the overall pattern.
+
+---
+
+#### Density Plot (Best Visualisation)
+
+```{r}
+#| label: q1-density-plot
+#| fig-cap: "Density of trip distances by tipping status"
+#| warning: false
+ggplot(taxi, aes(x = distance, color = tip, fill = tip)) +
+  geom_density(alpha = 0.4, linewidth = 0.5) +
+  scale_x_continuous(limits = c(0, 25)) +
+  labs(
+    title = "Trip distance density by tip status",
+    subtitle = "Longer trips show higher probability of tipping",
+    x = "Distance (miles)",
+    y = "Density",
+    color = "Tip",
+    fill = "Tip"
+  ) +
+  theme_minimal()
+```
+
+### Findings
+
+The density plot reveals several patterns:
+
+1.  **Short trips (\<5 miles)**: Approximately equal density for tipped and non-tipped trips. Passengers are equally likely to tip or not.
+
+2.  **Medium trips (10-15 miles)**: A small peak shows non-tipped trips slightly more common.
+
+3.  **Long trips (\>15 miles)**: Tipped trips show higher density, suggesting passengers are more likely to tip on longer journeys.
+
+4.  **Peak at 0 miles**: Likely data quality issue (trips with zero recorded distance) that should be investigated.
+
+### Conclusion
+
+**There is a clear relationship between trip distance and tipping behavior.**
+
+The density plot reveals that:
+
+1.  **Short trips** (around 2 miles) have roughly equal probability of receiving a tip or not
+
+2.  **Medium trips** (around 12 miles) show a higher probability of **not** receiving a tip
+
+3.  **Long trips** (around 18 miles) show a substantially higher probability of receiving a tip
+
+This pattern supports **Hypothesis 1**: longer trips are more likely to receive a tip. The relationship is not simply linear, there appears to be a threshold around 15 miles where tipping probability increases noticeably.
+
+The density plot is the most effective visualization for this question as it clearly shows probability differences across the distance spectrum
 
 ## Question 2
 
