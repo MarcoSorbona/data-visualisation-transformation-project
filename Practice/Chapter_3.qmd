@@ -68,3 +68,68 @@ glimpse(IAH_flights)
 ```
 
 #### 3.2. Rows
+
+`filter()`
+
+```{r}
+# flights with departure delay above 2h arrange by descending order 
+flights |>
+  filter(dep_delay > 120) |>
+  arrange(desc(dep_delay))
+```
+
+```{r}
+# flights departed on Jan 1st & count of flights on the day
+flights |>
+  filter(month == 1 & day == 1)|>
+  summarise(
+    n = n()
+  )
+```
+
+```{r}
+# flights departed in Jar OR Feb
+flights |>
+  filter(month == 1 | month == 2) |>
+  group_by(month) |>
+  summarise(
+    n = n()
+  )
+```
+
+```{r}
+# shrcut to selct months
+flights |>
+  filter(month %in% c(1,2))
+```
+
+```{r}
+flights |>
+  arrange(year, month, day, dep_delay)
+```
+
+`distinct()`
+
+```{r}
+flights |>
+  distinct()
+```
+
+```{r}
+flights |>
+  distinct(origin, dest)
+```
+
+```{r}
+flights |>
+  distinct(origin, dest, .keep_all = TRUE)
+```
+
+`count()`
+
+```{r}
+flights |>
+  count(origin, dest, sort = TRUE)
+```
+
+#### 3.2.5. Rows exercises
