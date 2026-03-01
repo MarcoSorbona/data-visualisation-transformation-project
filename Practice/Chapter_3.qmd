@@ -1,5 +1,70 @@
 ---
-title: "Chapter_3"
+title: "Chapter_3: Data Transformation"
 format: html
 editor: visual
+editor_options: 
+  chunk_output_type: console
 ---
+
+### Packages
+
+```{r}
+library(nycflights13)
+library(tidyverse)
+```
+
+```{r}
+## help(package = "nycflights13")
+## tibble:
+#flights
+
+## table
+#View(flights)
+
+## print
+#print(flights, width = Inf)
+
+# glimpse
+glimpse(flights)
+```
+
+#### 3.1.3. dplyr basics
+
+```{r}
+flights |>
+  filter(dest == "IAH") |>
+  group_by(year, month, day) |>
+  summarise(
+    mean_arr_delay = mean(arr_delay, na.rm = TRUE)
+  )
+```
+
+```{r}
+IAH_flights <- flights |>
+  filter(dest == "IAH") 
+glimpse(IAH_flights)
+```
+
+```{r}
+IAH_flights <- flights |>
+  filter(dest == "IAH") |>
+  group_by(year, month, day)
+glimpse(IAH_flights)
+```
+
+```{r}
+IAH_flights <- 
+  flights |>
+  filter(dest == "IAH") |>
+  group_by(year, month, day) |>
+  summarise(
+    mean_arr_delay = mean(arr_delay, na.rm = TRUE),
+    n = n(),
+    max_delay = max(arr_delay),
+    min_delay = min(arr_delay)
+
+  )
+glimpse(IAH_flights)
+```
+
+#### 3.2. Rows
