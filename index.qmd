@@ -69,7 +69,7 @@ taxi |>
 
 **Observation:** Most trips in this dataset received a tip.
 
----
+------------------------------------------------------------------------
 
 #### Summary Statistics
 
@@ -85,9 +85,9 @@ taxi |>
   )
 ```
 
----
+------------------------------------------------------------------------
 
-### Distribution of Trip Distances by Tip Status
+#### Distribution of Trip Distances by Tip Status
 
 #### Histogram
 
@@ -133,7 +133,7 @@ The peak at 0 miles suggests data quality issues (perhaps trips with missing dis
 
 4.  **Airport waiting**: Taxis waiting in queue with zero movement
 
----
+------------------------------------------------------------------------
 
 #### Boxplot
 
@@ -154,7 +154,7 @@ ggplot(taxi, aes(x = tip, y = distance, fill = tip)) +
 
 The boxplot confirms the presence of numerous outliers at longer distances, making it less ideal for visualizing the overall pattern.
 
----
+------------------------------------------------------------------------
 
 #### Density Plot (Best Visualisation)
 
@@ -206,11 +206,25 @@ The density plot is the most effective visualization for this question as it cle
 
 ## Question 2: Do taxi passengers tend to tip more for the company Chicago Independents than the other companies?
 
-#### Calculate tip rate:
+**Research question**: Do passengers tip at higher rate when riding with Chicago Independents compared to other taxi companies?
+
+**Hypotheses**:
+
+-   Hp0: There is no difference in tip rates between Chicago Independents and other companies
+
+-   Hp1: Chicago Independents receive tips at a higher rate than other companies
+
+This question involves exploring the relationship between a categorical variable (company) and the proportion of trips that received tips.
+
+---
+
+### Initial exploration: Calculate tip rate
+
+First, we need to calculate the tip rate for each company: the proportion of trips where a tip was given.
 
 ```{r}
 #| label: q2-company-tip-rate
-#| fig-cap: "Tip ra(te by company"
+#| fig-cap: "Tip rate by company"
 
 company_tip_rates <- taxi |>
   group_by(company) |>
@@ -220,20 +234,30 @@ company_tip_rates <- taxi |>
     tip_rate = tipped_trips / total_trips
   ) |>
 arrange(desc(tip_rate))
+
 company_tip_rates
 ```
 
+---
+
 #### Highlight Chicago Independents
+
+To make comparison easier, we create a flag for Chicago Independents
 
 ```{r}
 company_tip_rates <- company_tip_rates |>
   mutate(
     highlight = if_else(company == "Chicago Independents", "CI", "Other")
   )
+
 company_tip_rates
 ```
 
-#### Plot
+---
+
+#### Visualisation
+
+A bar plot allows us to compare tip rates across companies, with Chicago Independents highlighted:
 
 ```{r}
 ggplot(company_tip_rates, aes(x = reorder(company, tip_rate), y = tip_rate, fill = highlight)) +
@@ -252,4 +276,38 @@ ggplot(company_tip_rates, aes(x = reorder(company, tip_rate), y = tip_rate, fill
   theme(legend.position = "none")
 ```
 
-## Your own question
+---
+
+### Findings 
+
+The analysis shows that **Chicago Independents have the highest tip rate** among all companies, at approximately **95%** of trips receiving a tip. This is higher than the tip rate across other companies.
+
+---
+
+### Discussion
+
+The higher tip rate for Chicago Independents could be explained by several factors:
+
+-   Better service quality: Drivers may provide a superior experience
+
+-   Operational differences: Perhaps they serve different neighborhoods or longer trips
+
+-   Passenger demographics: Their customer base might have different tipping norms
+
+##### Limitations and follow-up questions
+
+The current analysis cannot explain why Chicago Independents have higher tip rates. Access to more granular data would help investigate:
+
+-   Do they operate primarily in wealthier neighborhoods?
+
+-   Do they perform longer trips on average? (Previous analysis showed longer trips are tipped more frequently)
+
+-   Is there variation in service quality (vehicle condition, driver professionalism)?
+
+-   Do they use different payment methods that encourage tipping?
+
+These questions point to the need for multivariate analysis to disentangle the factors contributing to higher tip rates.
+
+---
+
+## Follow-up Question: Do Chicago Independents perform longer trips on average? Rationale
