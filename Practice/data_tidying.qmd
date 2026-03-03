@@ -1,0 +1,109 @@
+---
+title: "data_tidying"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+
+## Data tidying
+
+there are three rules that make a dataset **tidy**:
+
+-   each **variable** is a **column**; each column is a variable
+
+-   each **observation** is a **row**; each row is an observation
+
+-   each **value** is a **cell**; each cell is a single value
+
+package: `tidyr`
+
+## Packages
+
+```{r}
+library(tidyverse)
+```
+
+```{r}
+table1
+
+table2
+
+table3
+```
+
+```{r}
+# compute rate per 10,000
+table1 |> 
+  mutate(
+    rate = cases / population * 10000
+  )
+```
+
+```{r}
+# Compute total cases per year whorldwide
+table1 |> 
+  group_by(year) |> 
+  summarise(
+    total_cases = sum(cases, na.rm = TRUE)
+  )
+```
+
+```{r}
+ggplot(table1, aes(x = year, y = cases)) +
+  geom_line(aes(group = country, color = "grey50")) +
+  geom_point(aes(color = country, shape = country)) +
+  scale_x_continuous(breaks = c(1999, 2000))
+```
+
+### Lengthening the data
+
+the `pivot_` operators:
+
+-   `pivot_longer()`
+
+-   `pivot_wider()`
+
+```{r}
+billboard
+```
+
+```{r}
+billboard |> 
+  pivot_longer(
+    cols = starts_with("wk"),
+    names_to = "week",
+    values_to = "rank"
+  )
+```
+
+```{r}
+billboard |> 
+  pivot_longer(
+    cols = starts_with("wk"),
+    names_to = "week",
+    values_to = "rank",
+    values_drop_na = TRUE
+  )
+```
+
+```{r}
+billboard_longer <- billboard |> 
+  pivot_longer(
+    cols = starts_with("wk"),
+    names_to = "week",
+    values_to = "rank",
+    values_drop_na = TRUE
+  ) |> 
+  mutate(
+    week = parse_number(week)
+  )
+billboard_longer
+```
+
+```{r}
+billboard_longer |> 
+  ggplot(aes(x = week, y = rank)) +
+  geom_line(alpha = 0.25, aes(group = track)) +
+  scale_y_reverse()
+```

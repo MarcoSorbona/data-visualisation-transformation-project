@@ -1,0 +1,26 @@
+---
+title: "data_import"
+format: html
+editor: visual
+editor_options: 
+  chunk_output_type: console
+---
+
+How to load file with **readr**
+
+```{r}
+library(tidyverse)
+```
+
+Focus on **plain-text rectangular files: CSV**
+
+```{r}
+students <- read_csv("students_file")
+```
+
+or
+
+```{r}
+students <- read.csv("https://pos.it/r4ds-students-csv")
+students
+```
