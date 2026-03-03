@@ -15,12 +15,40 @@ library(tidyverse)
 Focus on **plain-text rectangular files: CSV**
 
 ```{r}
-students <- read_csv("students_file")
+students <- read_csv("students_file.csv")
+students
 ```
 
-or
+converting to R readable NA
 
 ```{r}
-students <- read.csv("https://pos.it/r4ds-students-csv")
+students <- read_csv("students_file.csv", na = c("N/A", ""))
 students
+```
+
+rename variable to avoid spaces
+
+```{r}
+students |> 
+  rename(
+    student_id = `Student ID`, 
+    full_name = `Full Name`
+  )
+```
+
+```{r}
+students |> 
+  janitor::clean_names() |> 
+  mutate(
+    meal_plan = factor(meal_plan)
+  )
+```
+
+```{r}
+students |> 
+  janitor::clean_names() |> 
+  mutate(
+    meal_plan = factor(meal_plan),
+    age = parse_number(if_else(age == "five", "5", age))
+  )
 ```
