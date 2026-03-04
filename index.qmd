@@ -481,7 +481,7 @@ This follow-up demonstrates the value of visual inspection over automated statis
 
 ---
 
-### Question 3: Do tipping patterns vary by time of day or day of week? 
+## Question 3: Do tipping patterns vary by time of day or day of week? 
 
 **Research question**: Do passengers tip at different rates depending on when they ride: specifically, by hour of day and day of week?
 
@@ -508,3 +508,330 @@ Understanding these patterns could help drivers optimize their shifts and provid
 -   H2: Tip rates differ between weekdays and weekends
 
 -   H3: There is an interaction between time of day and day of week (e.g., Friday evening differs from Monday evening)
+
+---
+
+### Initial exploration: 
+
+```{r}
+ggplot(taxi, aes(x = hour, fill = tip)) +
+  geom_bar()
+```
+
+#### Tip rate by hour
+
+```{r}
+#| label: q3-tip-by-hour
+#| fig-cap: "Tip rate by hour of day"
+
+hourly_tips <- taxi |>
+  group_by(hour) |>
+  summarise(
+    tip_rate = mean(tip == "yes", na.rm = TRUE),
+    n_trips = n()
+  )
+
+# View the data
+hourly_tips |> head(10)
+
+# Plot
+ggplot(hourly_tips, aes(x = hour, y = tip_rate)) +
+  geom_line(color = "steelblue", linewidth = 0.5) +
+  geom_point(aes(size = n_trips), color = "darkred", alpha = 0.7) +
+  scale_y_continuous(labels = percent, limits = c(0.9, 1)) +  
+  scale_x_continuous(breaks = seq(0, 23, 2)) +
+  labs(
+    title = "Tip rate by hour of day",
+    subtitle = "Point size indicates number of trips",
+    x = "Hour (24-hour clock)",
+    y = "Tip rate",
+    size = "Number of trips"
+  ) +
+  theme_minimal()
+```
+
+#### Tip rate by day of the week
+
+```{r}
+#| label: q3-tip-by-dow
+#| fig-cap: "Tip rate by day of week"
+
+dow_tips <- taxi |>
+  group_by(dow) |>
+  summarise(
+    tip_rate = mean(tip == "yes", na.rm = TRUE),
+    n_trips = n()
+  )
+
+# Plot (ensuring correct order)
+dow_tips |>
+  mutate(dow = factor(dow, levels = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"))) |>
+  ggplot(aes(x = dow, y = tip_rate, fill = dow)) +
+  geom_col(alpha = 0.8) +
+  geom_text(aes(label = paste0(round(tip_rate * 100, 1), "%"),
+                y = tip_rate + 0.01), size = 3) +
+  scale_y_continuous(labels = percent, limits = c(0, 1)) +
+  labs(
+    title = "Tip rate by day of week",
+    x = "",
+    y = "Tip rate"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "none")
+```
+
+#### combine view
+
+```{r}
+#| label: q3-heatmap
+#| fig-cap: "Tip rate by hour and day of week"
+
+taxi |>
+  group_by(dow, hour) |>
+  summarise(
+    tip_rate = mean(tip == "yes", na.rm = TRUE),
+    n = n(),
+    .groups = "drop"
+  ) |>
+  filter(n > 10) |>  # Remove sparse cells
+  mutate(dow = factor(dow, levels = c("Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"))) |>
+  ggplot(aes(x = hour, y = dow, fill = tip_rate)) +
+  geom_tile() +
+  scale_fill_gradient2(
+    low = "#2166AC",      # Dark blue (low)
+    mid = "#F7F7F7",      # White (mid)
+    high = "#B2182B",     # Dark red (high)
+    midpoint = 0.92, 
+    labels = percent
+  ) +
+  scale_x_continuous(breaks = seq(0, 23, 3)) +
+  labs(
+    title = "Tip rate by hour and day of week",
+    subtitle = "Blue = lower tip rates, red = higher",
+    x = "Hour of day",
+    y = "",
+    fill = "Tip rate"
+  ) +
+  theme_minimal()
+```
+
+```{r}
+#| label: q3-summary-table
+#| tbl-cap: "Tip rates by time of day and weekend status"
+
+taxi |>
+  mutate(
+    time_category = case_when(
+      hour < 6 ~ "Late night (0-5)",
+      hour < 12 ~ "Morning (6-11)",
+      hour < 18 ~ "Afternoon (12-17)",
+      TRUE ~ "Evening (18-23)"
+    ),
+    weekend = if_else(dow %in% c("Sat", "Sun"), "Weekend", "Weekday")
+  ) |>
+  group_by(time_category, weekend) |>
+  summarise(
+    tip_rate = mean(tip == "yes", na.rm = TRUE),
+    n_trips = n(),
+    .groups = "drop"
+  ) |>
+  arrange(desc(tip_rate)) |>
+  knitr::kable(digits = 3, caption = "Tip rates by time category and weekend/weekday")
+```
+
+plot the above:
+
+```{r}
+#| label: q3-summary-data
+
+summary_data <- taxi |>
+  mutate(
+    time_category = case_when(
+      hour < 6 ~ "Late night (0-5)",
+      hour < 12 ~ "Morning (6-11)",
+      hour < 18 ~ "Afternoon (12-17)",
+      TRUE ~ "Evening (18-23)"
+    ),
+    weekend = if_else(dow %in% c("Sat", "Sun"), "Weekend", "Weekday")
+  ) |>
+  group_by(time_category, weekend) |>
+  summarise(
+    tip_rate = mean(tip == "yes", na.rm = TRUE),
+    n_trips = n(),
+    .groups = "drop"
+  )
+
+# Ensure time_category is in correct order
+summary_data <- summary_data |>
+  mutate(
+    time_category = factor(time_category, 
+                           levels = c("Late night (0-5)", "Morning (6-11)", 
+                                      "Afternoon (12-17)", "Evening (18-23)"))
+  )
+```
+
+plot1:
+
+```{r}
+#| label: q3-summary-bar
+#| fig-cap: "Tip rates by time of day and weekend status"
+
+ggplot(summary_data, aes(x = time_category, y = tip_rate, fill = weekend)) +
+  geom_col(position = "dodge", width = 0.7) +
+  geom_text(aes(label = paste0(round(tip_rate * 100, 1), "%")),
+            position = position_dodge(width = 0.7),
+            vjust = -0.5, size = 3) +
+  scale_y_continuous(labels = percent, limits = c(0, 1)) +
+  scale_fill_manual(values = c("Weekday" = "#1f77b4", "Weekend" = "#ff7f0e")) +
+  labs(
+    title = "Tip rates by time of day",
+    subtitle = "Weekend vs. weekday comparison",
+    x = "",
+    y = "Tip rate",
+    fill = "",
+    caption = "Bars show tip rate; labels show exact percentage"
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+plot2:
+
+```{r}
+#| label: q3-summary-facet
+#| fig-cap: "Tip rates by time period, faceted by weekend/weekday"
+
+ggplot(summary_data, aes(x = time_category, y = tip_rate, fill = weekend)) +
+  geom_col(show.legend = FALSE) +
+  geom_text(aes(label = paste0(round(tip_rate * 100, 1), "%")),
+            vjust = -0.5, size = 3) +
+  facet_wrap(~weekend) +
+  scale_y_continuous(labels = percent, limits = c(0, 1)) +
+  scale_fill_manual(values = c("Weekday" = "#1f77b4", "Weekend" = "#ff7f0e")) +
+  labs(
+    title = "Tip rates by time of day",
+    subtitle = "Weekday (left) vs. Weekend (right)",
+    x = "",
+    y = "Tip rate"
+  ) +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+plot3:
+
+```{r}
+#| label: q3-summary-dots
+#| fig-cap: "Tip rates with confidence based on sample size"
+
+ggplot(summary_data, aes(x = time_category, y = tip_rate, color = weekend)) +
+  geom_point(size = 4, position = position_dodge(width = 0.5)) +
+  geom_errorbar(aes(ymin = tip_rate - 1.96 * sqrt(tip_rate * (1 - tip_rate) / n_trips),
+                    ymax = tip_rate + 1.96 * sqrt(tip_rate * (1 - tip_rate) / n_trips)),
+                width = 0.2, position = position_dodge(width = 0.5)) +
+  scale_y_continuous(labels = percent, limits = c(0.8, 1)) +
+  scale_color_manual(values = c("Weekday" = "#1f77b4", "Weekend" = "#ff7f0e")) +
+  labs(
+    title = "Tip rates by time of day",
+    subtitle = "Error bars show 95% confidence intervals (wider = less certain)",
+    x = "",
+    y = "Tip rate",
+    color = ""
+  ) +
+  theme_minimal() +
+  theme(legend.position = "top")
+```
+
+plot4:
+
+```{r}
+#| label: q3-summary-heatmap
+#| fig-cap: "Tip rates heatmap: time of day vs. weekend status"
+
+summary_data |>
+  mutate(
+    weekend = factor(weekend, levels = c("Weekday", "Weekend")),
+    label = paste0(round(tip_rate * 100, 1), "%")
+  ) |>
+  ggplot(aes(x = weekend, y = time_category, fill = tip_rate)) +
+  geom_tile() +
+  geom_text(aes(label = label), color = "white", size = 4) +
+  scale_fill_gradient(low = "#08519C", high = "#F7F7F7", labels = percent) +
+  labs(
+    title = "Tip rates by time of day and weekend status",
+    x = "",
+    y = "",
+    fill = "Tip rate"
+  ) +
+  theme_minimal()
+```
+
+plot5:
+
+```{r}
+#| label: q3-summary-clean-with-errors
+#| fig-cap: "Tip rates by time of day (weekend vs. weekday) with 95% confidence intervals"
+
+# First, calculate standard errors for each group
+summary_data <- summary_data |>
+  mutate(
+    se = sqrt(tip_rate * (1 - tip_rate) / n_trips),  # Standard error
+    margin = 1.96 * se,                               # 95% CI margin
+    ci_lower = tip_rate - margin,
+    ci_upper = tip_rate + margin
+  )
+
+# Now plot with error bars
+ggplot(summary_data, aes(x = time_category, y = tip_rate, fill = weekend)) +
+  geom_col(position = position_dodge(width = 0.6), width = 0.6, alpha = 0.9) +
+  geom_errorbar(
+    aes(ymin = ci_lower, ymax = ci_upper),
+    position = position_dodge(width = 0.6),
+    width = 0.2,
+    linewidth = 0.5
+  ) +
+  scale_y_continuous(labels = percent, limits = c(0, 1), expand = c(0, 0)) +
+  scale_fill_manual(values = c("Weekday" = "#2c7fb8", "Weekend" = "#f03b20")) +
+  labs(
+    title = "Do weekends have higher tip rates?",
+    subtitle = "Tip rates by time of day, comparing weekday vs. weekend (error bars = 95% CI)",
+    x = "",
+    y = "Tip rate",
+    fill = "",
+    caption = paste("Based on", nrow(taxi), "Chicago taxi trips (2022)")
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "top",
+    panel.grid.major.x = element_blank(),
+    axis.text.x = element_text(angle = 0, hjust = 0.5)
+  )
+```
+
+```{r}
+#| label: q3-honest-plot
+#| fig-cap: "Tip rates by time of day (no meaningful pattern)"
+
+summary_data |>
+  mutate(
+    # Flag low sample sizes
+    reliable = if_else(n_trips > 500, "Reliable", "Low sample"),
+    time_category = factor(time_category, 
+                           levels = c("Late night (0-5)", "Morning (6-11)", 
+                                      "Afternoon (12-17)", "Evening (18-23)"))
+  ) |>
+  ggplot(aes(x = time_category, y = tip_rate, color = weekend, shape = reliable)) +
+  geom_point(size = 4, position = position_dodge(width = 0.5)) +
+  geom_hline(yintercept = 0.92, linetype = "dashed", alpha = 0.5) +
+  scale_y_continuous(labels = percent, limits = c(0.85, 1)) +
+  labs(
+    title = "Tip rates are consistently around 92%",
+    subtitle = "No meaningful variation by time or day (dashed line = overall average)",
+    x = "",
+    y = "Tip rate",
+    color = "",
+    shape = "Reliability",
+    caption = "Points with low sample size (<500 trips) are less reliable"
+  ) +
+  theme_minimal()
+```
