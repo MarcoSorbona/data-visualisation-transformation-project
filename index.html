@@ -473,8 +473,240 @@ $ hour     &lt;int&gt; 16, 8, 18, 8, 21, 23, 12, 6, 12, 14, 18, 11, 12, 19, 17, 
 <li><p>Payment method preferences</p></li>
 <li><p>Other company-specific variables</p></li>
 </ul>
-<p>This follow-up demonstrates the value of visual inspection over automated statistical tests, especially when working with non-normal distributions. The boxplot and density plotprovide a clearer answer than any p-value.</p>
+<p>This follow-up demonstrates the value of visual inspection over automated statistical tests, especially when working with non-normal distributions. The boxplot and density plot provide a clearer answer than any p-value.</p>
+<hr>
 </section>
+</section>
+<section id="question-3-do-tipping-patterns-vary-by-time-of-day-or-day-of-week" class="level2">
+<h2 class="anchored" data-anchor-id="question-3-do-tipping-patterns-vary-by-time-of-day-or-day-of-week">Question 3: Do tipping patterns vary by time of day or day of week?</h2>
+<p><strong>Research question</strong>: Do passengers tip at different rates depending on when they ride: specifically, by hour of day and day of week?</p>
+<p><strong>Rationale</strong></p>
+<p>Tipping behavior may be influenced by contextual factors that vary across time:</p>
+<ul>
+<li><p><em>Early morning</em>: Airport runs, commuters heading to work</p></li>
+<li><p><em>Midday</em>: Short trips for errands, lunch</p></li>
+<li><p><em>Evening</em>: Dinner out, social events, nightlife</p></li>
+<li><p><em>Late night</em>: Bar crowds, revelers (potentially more generous or less?)</p></li>
+<li><p><em>Weekends vs.&nbsp;weekdays</em>: Leisure vs.&nbsp;business travel</p></li>
+</ul>
+<p>Understanding these patterns could help drivers optimize their shifts and provide insight into passenger psychology.</p>
+<p><strong>Hypotheses</strong></p>
+<ul>
+<li><p>H1: Tip rates vary significantly by hour of day</p></li>
+<li><p>H2: Tip rates differ between weekdays and weekends</p></li>
+<li><p>H3: There is an interaction between time of day and day of week (e.g., Friday evening differs from Monday evening)</p></li>
+</ul>
+<hr>
+<section id="analysis" class="level3">
+<h3 class="anchored" data-anchor-id="analysis">Analysis</h3>
+<section id="create-time-categories" class="level4">
+<h4 class="anchored" data-anchor-id="create-time-categories">Create time categories</h4>
+<p>We group the 24 hours into four meaningful periods and flag weekends:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="caption-top table table-sm table-striped small">
+<caption>Tip rates by time of day and weekend status</caption>
+<thead>
+<tr class="header">
+<th style="text-align: left;">time_category</th>
+<th style="text-align: left;">weekend</th>
+<th style="text-align: right;">tip_rate</th>
+<th style="text-align: right;">n_trips</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">Late night (0-5)</td>
+<td style="text-align: left;">Weekend</td>
+<td style="text-align: right;">0.968</td>
+<td style="text-align: right;">62</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Morning (6-11)</td>
+<td style="text-align: left;">Weekend</td>
+<td style="text-align: right;">0.934</td>
+<td style="text-align: right;">320</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Evening (18-23)</td>
+<td style="text-align: left;">Weekend</td>
+<td style="text-align: right;">0.933</td>
+<td style="text-align: right;">570</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Evening (18-23)</td>
+<td style="text-align: left;">Weekday</td>
+<td style="text-align: right;">0.927</td>
+<td style="text-align: right;">2011</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Afternoon (12-17)</td>
+<td style="text-align: left;">Weekend</td>
+<td style="text-align: right;">0.922</td>
+<td style="text-align: right;">771</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Morning (6-11)</td>
+<td style="text-align: left;">Weekday</td>
+<td style="text-align: right;">0.920</td>
+<td style="text-align: right;">2498</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">Afternoon (12-17)</td>
+<td style="text-align: left;">Weekday</td>
+<td style="text-align: right;">0.914</td>
+<td style="text-align: right;">3712</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;">Late night (0-5)</td>
+<td style="text-align: left;">Weekday</td>
+<td style="text-align: right;">0.911</td>
+<td style="text-align: right;">56</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</section>
+<section id="visualize-with-uncertainty" class="level4">
+<h4 class="anchored" data-anchor-id="visualize-with-uncertainty">Visualize with uncertainty</h4>
+<div class="cell">
+<div class="cell-output-display">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="index_files/figure-html/q3-tip-rates-plot-1.png" class="img-fluid figure-img" width="672"></p>
+<figcaption>Tip rates by time of day and weekend status with 95% confidence intervals</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</section>
+</section>
+<section id="findings-3" class="level3">
+<h3 class="anchored" data-anchor-id="findings-3">Findings</h3>
+<p>Despite initial expectations, the data reveal remarkably little variation in tip rates by time of day or day of week:</p>
+<ol type="1">
+<li><p>Narrow range: All tip rates fall between 91% and 97% — a span of only 6 percentage points</p></li>
+<li><p>Most values cluster tightly: Seven of eight groups are between 91% and 94%</p></li>
+<li><p>The only outlier is unreliable: Late night weekend (96.8%) is based on only 62 trips — too few to draw firm conclusions</p></li>
+<li><p>Large-sample groups tell the story:</p>
+<ul>
+<li><p>Evening weekday: 92.7% (2,011 trips)</p></li>
+<li><p>Afternoon weekday: 91.4% (3,712 trips)</p></li>
+<li><p>Morning weekday: 92.0% (2,498 trips)</p></li>
+</ul></li>
+</ol>
+<p>The dashed line on the plot shows the overall average tip rate (92%): almost all points fall within error bars of this line.</p>
+<hr>
+</section>
+<section id="discussion-1" class="level3">
+<h3 class="anchored" data-anchor-id="discussion-1">Discussion</h3>
+<p><strong>Why this “non-finding” matters</strong></p>
+<div class="cell">
+<div id="tbl-implications-clean" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-implications-clean-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;1: What our analysis tells us
+</figcaption>
+<div aria-describedby="tbl-implications-clean-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<caption>Summary of findings and their implications</caption>
+<colgroup>
+<col style="width: 13%">
+<col style="width: 39%">
+<col style="width: 47%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Question</th>
+<th style="text-align: left;">Key finding</th>
+<th style="text-align: left;">What it means</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Q1: Distance</strong></td>
+<td style="text-align: left;">Longer trips receive tips more often</td>
+<td style="text-align: left;">Time of day doesn’t explain this — it’s truly about distance</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Q2: Company</strong></td>
+<td style="text-align: left;">Chicago Independents have highest tip rate (≈95%)</td>
+<td style="text-align: left;">Company difference isn’t due to when they drive</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>For drivers</strong></td>
+<td style="text-align: left;">Tip rates are stable across all shifts (≈92%)</td>
+<td style="text-align: left;">Focus on getting long trips and choosing the right company</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
+<p><strong>Limitations</strong></p>
+<ul>
+<li><p>Late night hours have very few trips: we cannot draw conclusions about 3 AM behavior</p></li>
+<li><p>The dataset lacks trip purpose: perhaps certain times have different passenger types, but tip rates don’t reflect this</p></li>
+<li><p>With 10,000 trips, we have good statistical power: so the lack of pattern is likely real, not due to small samples</p></li>
+</ul>
+</section>
+<section id="conclusion-2" class="level3">
+<h3 class="anchored" data-anchor-id="conclusion-2">Conclusion</h3>
+<p>There is no meaningful pattern in tip rates by time of day or day of week. Tipping is consistently high (around 92%) across all periods with sufficient data. The small variations we observe are within expected random fluctuation, especially in low-sample cells.</p>
+<p>This negative finding is still valuable: it suggests that time of day does not confound the relationships observed in Questions 1 and 2, and that tipping behavior in Chicago taxis is remarkably stable across temporal dimensions.</p>
+<hr>
+</section>
+</section>
+<section id="summary-of-all-questions" class="level2">
+<h2 class="anchored" data-anchor-id="summary-of-all-questions">Summary of All Questions</h2>
+<div class="cell">
+<div id="tbl-findings" class="cell quarto-float quarto-figure quarto-figure-center anchored">
+<figure class="quarto-float quarto-float-tbl figure">
+<figcaption class="quarto-float-caption-top quarto-float-caption quarto-float-tbl" id="tbl-findings-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+Table&nbsp;2: Summary of research findings
+</figcaption>
+<div aria-describedby="tbl-findings-caption-0ceaefa1-69ba-4598-a22c-09a6ac19f8ca">
+<div class="cell-output-display">
+<table class="do-not-create-environment cell caption-top table table-sm table-striped small">
+<caption>Summary of research findings</caption>
+<colgroup>
+<col style="width: 27%">
+<col style="width: 72%">
+</colgroup>
+<thead>
+<tr class="header">
+<th style="text-align: left;">Question</th>
+<th style="text-align: left;">Finding</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;"><strong>Q1: Distance and tipping</strong></td>
+<td style="text-align: left;">Longer trips are more likely to receive tips</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Q2: Company tip rates</strong></td>
+<td style="text-align: left;">Chicago Independents have highest tip rate (~95%)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;"><strong>Q3: Time patterns</strong></td>
+<td style="text-align: left;">No meaningful variation — all times cluster around 92%</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"><strong>Follow-up: CI distance</strong></td>
+<td style="text-align: left;">No meaningful difference — tip rate difference NOT explained by trip length</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</figure>
+</div>
+</div>
 </section>
 
 </main>

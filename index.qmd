@@ -477,4 +477,205 @@ The tip difference observed in Question 2 must therefore be attributed to other 
 
 -   Other company-specific variables
 
-This follow-up demonstrates the value of visual inspection over automated statistical tests, especially when working with non-normal distributions. The boxplot and density plotprovide a clearer answer than any p-value.
+This follow-up demonstrates the value of visual inspection over automated statistical tests, especially when working with non-normal distributions. The boxplot and density plot provide a clearer answer than any p-value.
+
+---
+
+## Question 3: Do tipping patterns vary by time of day or day of week?
+
+**Research question**: Do passengers tip at different rates depending on when they ride: specifically, by hour of day and day of week?
+
+**Rationale**
+
+Tipping behavior may be influenced by contextual factors that vary across time:
+
+-   *Early morning*: Airport runs, commuters heading to work
+
+-   *Midday*: Short trips for errands, lunch
+
+-   *Evening*: Dinner out, social events, nightlife
+
+-   *Late night*: Bar crowds, revelers (potentially more generous or less?)
+
+-   *Weekends vs. weekdays*: Leisure vs. business travel
+
+Understanding these patterns could help drivers optimize their shifts and provide insight into passenger psychology.
+
+**Hypotheses**
+
+-   H1: Tip rates vary significantly by hour of day
+
+-   H2: Tip rates differ between weekdays and weekends
+
+-   H3: There is an interaction between time of day and day of week (e.g., Friday evening differs from Monday evening)
+
+---
+
+### Analysis
+
+#### Create time categories
+
+We group the 24 hours into four meaningful periods and flag weekends:
+
+```{r}
+#| label: q3-prepare-data
+
+summary_data <- taxi |>
+  mutate(
+    time_category = case_when(
+      hour < 6 ~ "Late night (0-5)",
+      hour < 12 ~ "Morning (6-11)",
+      hour < 18 ~ "Afternoon (12-17)",
+      TRUE ~ "Evening (18-23)"
+    ),
+    weekend = if_else(dow %in% c("Sat", "Sun"), "Weekend", "Weekday")
+  ) |>
+  group_by(time_category, weekend) |>
+  summarise(
+    tip_rate = mean(tip == "yes", na.rm = TRUE),
+    n_trips = n(),
+    .groups = "drop"
+  ) |>
+  mutate(
+    time_category = factor(time_category, 
+                           levels = c("Late night (0-5)", "Morning (6-11)", 
+                                      "Afternoon (12-17)", "Evening (18-23)")),
+    se = sqrt(tip_rate * (1 - tip_rate) / n_trips),
+    ci_lower = tip_rate - 1.96 * se,
+    ci_upper = tip_rate + 1.96 * se
+  )
+
+# View the summary
+summary_data |> 
+  select(time_category, weekend, tip_rate, n_trips) |>
+  arrange(desc(tip_rate)) |>
+  knitr::kable(digits = 3, caption = "Tip rates by time of day and weekend status")
+```
+
+#### Visualize with uncertainty
+
+```{r}
+#| label: q3-tip-rates-plot
+#| fig-cap: "Tip rates by time of day and weekend status with 95% confidence intervals"
+
+ggplot(summary_data, aes(x = time_category, y = tip_rate, color = weekend)) +
+  geom_point(size = 3, position = position_dodge(width = 0.5)) +
+  geom_errorbar(
+    aes(ymin = ci_lower, ymax = ci_upper),
+    width = 0.2,
+    position = position_dodge(width = 0.5)
+  ) +
+  geom_hline(yintercept = mean(taxi$tip == "yes", na.rm = TRUE), 
+             linetype = "dashed", alpha = 0.5, color = "gray50") +
+  scale_y_continuous(labels = percent, limits = c(0.8, 1)) +
+  scale_color_manual(values = c("Weekday" = "#2c7fb8", "Weekend" = "#f03b20")) +
+  labs(
+    title = "Tip rates show no meaningful variation by time",
+    subtitle = "All periods cluster around 92% (dashed line = overall average)",
+    x = "",
+    y = "Tip rate",
+    color = "",
+    caption = paste("Error bars show 95% confidence intervals. Based on", 
+                    nrow(taxi), "Chicago taxi trips (2022).")
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    legend.position = "top",
+    axis.text.x = element_text(angle = 0, hjust = 0.5)
+  )
+```
+
+### Findings
+
+Despite initial expectations, the data reveal remarkably little variation in tip rates by time of day or day of week:
+
+1.  Narrow range: All tip rates fall between 91% and 97% — a span of only 6 percentage points
+
+2.  Most values cluster tightly: Seven of eight groups are between 91% and 94%
+
+3.  The only outlier is unreliable: Late night weekend (96.8%) is based on only 62 trips — too few to draw firm conclusions
+
+4.  Large-sample groups tell the story:
+
+    -   Evening weekday: 92.7% (2,011 trips)
+
+    -   Afternoon weekday: 91.4% (3,712 trips)
+
+    -   Morning weekday: 92.0% (2,498 trips)
+
+The dashed line on the plot shows the overall average tip rate (92%): almost all points fall within error bars of this line.
+
+---
+
+### Discussion 
+
+**Why this "non-finding" matters**
+
+```{r}
+#| label: tbl-implications-clean
+#| tbl-cap: "What our analysis tells us"
+
+library(knitr)
+
+data.frame(
+  Question = c(
+    "**Q1: Distance**", 
+    "**Q2: Company**", 
+    "**For drivers**"
+  ),
+  `Key finding` = c(
+    "Longer trips receive tips more often",
+    "Chicago Independents have highest tip rate (≈95%)",
+    "Tip rates are stable across all shifts (≈92%)"
+  ),
+  `What it means` = c(
+    "Time of day doesn't explain this — it's truly about distance",
+    "Company difference isn't due to when they drive",
+    "Focus on getting long trips and choosing the right company"
+  ),
+  check.names = FALSE
+) |>
+  kable(caption = "Summary of findings and their implications")
+```
+
+**Limitations**
+
+-   Late night hours have very few trips: we cannot draw conclusions about 3 AM behavior
+
+-   The dataset lacks trip purpose: perhaps certain times have different passenger types, but tip rates don't reflect this
+
+-   With 10,000 trips, we have good statistical power: so the lack of pattern is likely real, not due to small samples
+
+### Conclusion
+
+There is no meaningful pattern in tip rates by time of day or day of week. Tipping is consistently high (around 92%) across all periods with sufficient data. The small variations we observe are within expected random fluctuation, especially in low-sample cells.
+
+This negative finding is still valuable: it suggests that time of day does not confound the relationships observed in Questions 1 and 2, and that tipping behavior in Chicago taxis is remarkably stable across temporal dimensions.
+
+---
+
+## Summary of All Questions
+
+```{r}
+#| label: tbl-findings
+#| tbl-cap: "Summary of research findings"
+
+library(knitr)
+
+data.frame(
+  Question = c(
+    "**Q1: Distance and tipping**",
+    "**Q2: Company tip rates**", 
+    "**Q3: Time patterns**",
+    "**Follow-up: CI distance**"
+  ),
+  Finding = c(
+    "Longer trips are more likely to receive tips",
+    "Chicago Independents have highest tip rate (~95%)",
+    "No meaningful variation — all times cluster around 92%",
+    "No meaningful difference — tip rate difference NOT explained by trip length"
+  ),
+  check.names = FALSE
+) |>
+  kable(caption = "Summary of research findings", align = c("l", "l"))
+```
