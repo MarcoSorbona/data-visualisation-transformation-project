@@ -113,7 +113,7 @@ The histogram reveals a **multimodal distribution** with **four distinct peaks**
 
 -   **Peak 1: \~0 miles**. Very short/zero-distance trips
 
--   **Peak 2: \~2.5 miles**. Most common trip length
+-   **Peak 2: \~2 miles**. Most common trip length
 
 -   **Peak 3: \~12 miles**. Medium-length trips
 
@@ -478,3 +478,33 @@ The tip difference observed in Question 2 must therefore be attributed to other 
 -   Other company-specific variables
 
 This follow-up demonstrates the value of visual inspection over automated statistical tests, especially when working with non-normal distributions. The boxplot and density plotprovide a clearer answer than any p-value.
+
+---
+
+### Question 3: Do tipping patterns vary by time of day or day of week? 
+
+**Research question**: Do passengers tip at different rates depending on when they ride: specifically, by hour of day and day of week?
+
+**Rationale**
+
+Tipping behavior may be influenced by contextual factors that vary across time:
+
+-   *Early morning*: Airport runs, commuters heading to work
+
+-   *Midday*: Short trips for errands, lunch
+
+-   *Evening*: Dinner out, social events, nightlife
+
+-   *Late night*: Bar crowds, revelers (potentially more generous or less?)
+
+-   *Weekends vs. weekdays*: Leisure vs. business travel
+
+Understanding these patterns could help drivers optimize their shifts and provide insight into passenger psychology.
+
+**Hypotheses**
+
+-   H1: Tip rates vary significantly by hour of day
+
+-   H2: Tip rates differ between weekdays and weekends
+
+-   H3: There is an interaction between time of day and day of week (e.g., Friday evening differs from Monday evening)
